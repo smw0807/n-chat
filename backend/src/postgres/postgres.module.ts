@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/user/entity/user.entity';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get('postgres.username'),
         password: configService.get('postgres.password'),
         database: configService.get('postgres.database'),
-        entities: [],
+        entities: [User],
         synchronize: false,
       }),
     }),
