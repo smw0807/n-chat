@@ -19,7 +19,7 @@ import { User } from 'src/user/entity/user.entity';
           password: config.password,
           database: config.database,
           entities: [User],
-          synchronize: false,
+          synchronize: true,
         };
       },
     }),
