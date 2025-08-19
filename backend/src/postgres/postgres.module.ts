@@ -8,16 +8,20 @@ import { User } from 'src/user/entity/user.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('postgres.host'),
-        port: configService.get('postgres.port'),
-        username: configService.get('postgres.username'),
-        password: configService.get('postgres.password'),
-        database: configService.get('postgres.database'),
-        entities: [User],
-        synchronize: false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get('postgres');
+
+        return {
+          type: 'postgres',
+          host: config.host,
+          port: config.port,
+          username: config.username,
+          password: config.password,
+          database: config.database,
+          entities: [User],
+          synchronize: false,
+        };
+      },
     }),
   ],
 })
