@@ -1,8 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { Repository } from 'typeorm';
 import { AuthUtils } from 'src/utils/auth.utils';
+import { SignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class UserService {
@@ -12,11 +13,7 @@ export class UserService {
     private authUtils: AuthUtils,
   ) {}
 
-  async signup(user: User): Promise<User> {
-    const existingUser = await this.findOne(user.email);
-    if (existingUser) {
-      throw new ConflictException('Email already in use');
-    }
+  async signup(user: SignupDto): Promise<User> {
     const hashedPassword = await this.authUtils.hashPassword(user.password);
     const newUser = this.userRepository.create({
       ...user,

@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
   NotFoundException,
@@ -8,13 +9,18 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
+import { SignupDto } from './dto/signup.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('signup')
-  async signup(@Body() user: User): Promise<User> {
+  async signup(@Body() user: SignupDto): Promise<User> {
+    const existingUser = await this.userService.findOne(user.email);
+    if (existingUser) {
+      throw new ConflictException('Email already in use');
+    }
     return this.userService.signup(user);
   }
 
