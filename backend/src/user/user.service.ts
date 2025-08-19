@@ -14,7 +14,7 @@ export class UserService {
     return this.userRepository.find();
   }
 
-  async findOne(id: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { id } });
+  async findOne(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
   }
 }
