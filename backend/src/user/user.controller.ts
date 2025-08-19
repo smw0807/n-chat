@@ -1,10 +1,22 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post('signup')
+  async signup(@Body() user: User): Promise<User> {
+    return this.userService.signup(user);
+  }
 
   @Get()
   async findAll(): Promise<User[]> {

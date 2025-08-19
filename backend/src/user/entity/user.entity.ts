@@ -1,9 +1,9 @@
 import {
   Column,
   Entity,
-  PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 export enum Role {
@@ -26,10 +26,7 @@ export enum SignUpType {
   name: 'TB_USER',
 })
 export class User {
-  @PrimaryColumn({
-    type: 'varchar',
-    length: 25,
-  })
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column({
