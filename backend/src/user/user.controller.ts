@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -22,6 +23,16 @@ export class UserController {
       throw new ConflictException('Email already in use');
     }
     return this.userService.signup(user);
+  }
+
+  @Delete(':email')
+  async remove(@Param('email') email: string): Promise<{ message: string }> {
+    const user = await this.userService.findOne(email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.userService.remove(user.id);
+    return { message: 'User deleted successfully' };
   }
 
   @Get()

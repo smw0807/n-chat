@@ -22,6 +22,10 @@ export class UserService {
     return this.userRepository.save(newUser);
   }
 
+  async remove(id: string): Promise<void> {
+    await this.userRepository.delete({ id });
+  }
+
   async findAll(): Promise<User[]> {
     return this.userRepository.find();
   }
