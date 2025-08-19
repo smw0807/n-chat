@@ -5,10 +5,19 @@ import { ConfigModule } from './config/config.module';
 import { ChatModule } from './chat/chat.module';
 import { RoomModule } from './room/room.module';
 import { PostgresModule } from './postgres/postgres.module';
+import { UtilsModule } from './utils/utils.module';
+
 import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [ConfigModule, ChatModule, RoomModule, PostgresModule, UserModule],
+  imports: [
+    ConfigModule,
+    ChatModule,
+    RoomModule,
+    PostgresModule,
+    UserModule,
+    UtilsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
