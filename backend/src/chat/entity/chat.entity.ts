@@ -6,6 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 
 @Entity('TB_CHAT')
@@ -19,9 +20,8 @@ export class Chat {
   })
   message: string;
 
-  @Column({
+  @CreateDateColumn({
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
 
