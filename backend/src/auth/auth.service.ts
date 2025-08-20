@@ -34,7 +34,6 @@ export class AuthService {
         payload['refresh_expiry_date'] = tokens.refresh_expiry_date;
       }
       // 토큰 만료 기간 설정 (기본값 7일)
-      const expiryDate = tokens?.expiry_date ?? this.accessExpiryDate;
       const accessExpiryDate =
         tokens?.access_expiry_date ?? this.accessExpiryDate;
       const refreshExpiryDate =
@@ -47,7 +46,7 @@ export class AuthService {
       return {
         access_token: accessToken,
         refresh_token: refreshToken,
-        expiry_date: expiryDate,
+        expiry_date: tokens?.expiry_date,
         access_expiry_date: accessExpiryDate,
         refresh_expiry_date: refreshExpiryDate,
       };
