@@ -27,6 +27,7 @@ export class UserController {
     return this.userService.signup(user);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':email')
   async remove(@Param('email') email: string): Promise<{ message: string }> {
     const user = await this.userService.findOne(email);
@@ -47,6 +48,7 @@ export class UserController {
     return users;
   }
 
+  @UseGuards(AuthGuard)
   @Get(':email')
   async findOne(@Param('email') email: string): Promise<User | null> {
     const user = await this.userService.findOne(email);
