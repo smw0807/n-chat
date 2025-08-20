@@ -1,9 +1,12 @@
+import { Chat } from 'src/chat/entity/chat.entity';
+import { Room } from 'src/room/entity/room.entity';
 import {
   Column,
   Entity,
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 
 export enum Role {
@@ -124,4 +127,10 @@ export class User {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToMany(() => Room, (room) => room.user)
+  rooms: Room[];
+
+  @OneToMany(() => Chat, (chat) => chat.user)
+  chats: Chat[];
 }

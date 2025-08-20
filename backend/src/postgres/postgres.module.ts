@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
+import { Room } from 'src/room/entity/room.entity';
+import { Chat } from 'src/chat/entity/chat.entity';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { User } from 'src/user/entity/user.entity';
           username: config.username,
           password: config.password,
           database: config.database,
-          entities: [User],
+          entities: [User, Room, Chat],
           synchronize: true,
         };
       },
