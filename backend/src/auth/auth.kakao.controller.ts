@@ -3,7 +3,6 @@ import { AuthKakaoService } from './auth.kakao.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { AuthUtils } from 'src/utils/auth.utils';
 import { SignUpType } from './models/auth.model';
 
 @Controller('auth/kakao')
@@ -13,7 +12,6 @@ export class AuthKakaoController {
     private readonly authKakaoService: AuthKakaoService,
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly authUtils: AuthUtils,
   ) {}
 
   @Get('signin') // 카카오 로그인 페이지 이동
