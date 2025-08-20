@@ -7,10 +7,12 @@ import {
   NotFoundException,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entity/user.entity';
 import { SignupDto } from './dto/signup.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -35,6 +37,7 @@ export class UserController {
     return { message: 'User deleted successfully' };
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   async findAll(): Promise<User[]> {
     const users = await this.userService.findAll();
