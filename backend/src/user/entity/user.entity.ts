@@ -1,5 +1,5 @@
 import { Chat } from 'src/chat/entity/chat.entity';
-import { Room } from 'src/room/entity/room.entity';
+import { Room } from 'src/chat/entity/room.entity';
 import {
   Column,
   Entity,

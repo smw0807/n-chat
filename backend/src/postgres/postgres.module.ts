@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { Room } from 'src/room/entity/room.entity';
+import { Room } from 'src/chat/entity/room.entity';
 import { Chat } from 'src/chat/entity/chat.entity';
 
 @Module({

@@ -5,6 +5,11 @@ import { ChatService } from './chat.service';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Get('rooms')
+  async getRooms() {
+    return await this.chatService.getRooms();
+  }
+
   @Get('room/:roomId/messages')
   async getMessagesByRoomId(@Param('roomId', ParseIntPipe) roomId: number) {
     return await this.chatService.getMessagesByRoomId(roomId);

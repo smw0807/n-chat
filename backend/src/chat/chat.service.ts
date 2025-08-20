@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './entity/chat.entity';
-import { Room } from '../room/entity/room.entity';
+import { Room } from './entity/room.entity';
 import { User } from '../user/entity/user.entity';
 
 interface ChatMessageDto {
@@ -22,6 +22,16 @@ export class ChatService {
     private userRepository: Repository<User>,
   ) {}
 
+  // 채팅 방 목록
+  async getRooms(): Promise<Room[]> {
+    return await this.roomRepository.find({
+      relations: ['user'],
+    });
+  }
+
+  // 방 생성(생성 후 socket.io 연결)
+
+  // 메시지 저장
   async saveMessage(chatMessageDto: ChatMessageDto): Promise<Chat> {
     const { roomId, userId, message } = chatMessageDto;
 
@@ -44,6 +54,7 @@ export class ChatService {
     return await this.chatRepository.save(chat);
   }
 
+  // 방의 메시지 목록
   async getMessagesByRoomId(roomId: number): Promise<Chat[]> {
     return await this.chatRepository.find({
       where: { room: { id: roomId } },
@@ -52,6 +63,7 @@ export class ChatService {
     });
   }
 
+  // 방의 최근 메시지 목록
   async getRecentMessages(roomId: number, limit: number = 50): Promise<Chat[]> {
     return await this.chatRepository.find({
       where: { room: { id: roomId } },
