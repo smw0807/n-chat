@@ -22,10 +22,9 @@ export type TokenInfo = {
 } & Token;
 
 export type TokenUser = {
+  id: number;
   email: string;
-  id: string;
-  name: string;
   role: Role;
   type: SignUpType;
   profileImage?: string;
-} & TokenInfo;
+};
