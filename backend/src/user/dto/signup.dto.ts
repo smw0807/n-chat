@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { SignUpType } from '../entity/user.entity';
 
 export class SignupDto {
   @IsEmail()
@@ -8,4 +9,21 @@ export class SignupDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+}
+
+export class SocialSignupDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEnum(SignUpType)
+  @IsNotEmpty()
+  type: SignUpType;
+
+  @IsString()
+  profileImage: string;
 }

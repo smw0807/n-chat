@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { Repository } from 'typeorm';
 import { AuthUtils } from 'src/utils/auth.utils';
-import { SignupDto } from './dto/signup.dto';
+import { SignupDto, SocialSignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class UserService {
@@ -22,6 +22,15 @@ export class UserService {
     return this.userRepository.save(newUser);
   }
 
+  async addSocialUser(user: SocialSignupDto): Promise<User> {
+    // const hashedPassword = await this.authUtils.hashPassword(user.password);
+    const newUser = this.userRepository.create({
+      ...user,
+      // password: hashedPassword,
+    });
+    return this.userRepository.save(newUser);
+  }
+
   async remove(id: string): Promise<void> {
     await this.userRepository.delete({ id });
   }
@@ -32,5 +41,15 @@ export class UserService {
 
   async findOne(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  async updateLastLogin(email: string): Promise<void> {
+    await this.userRepository.update({ email }, { lastLoginAt: new Date() });
+  }
+
+  async verifyPassword(email: string, password: string): Promise<boolean> {
+    const user = await this.findOne(email);
+    if (!user) return false;
+    return await this.authUtils.comparePassword(password, user.password);
   }
 }

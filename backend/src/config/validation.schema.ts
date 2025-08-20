@@ -16,4 +16,12 @@ export const validationSchema = Joi.object({
   POSTGRES_USER: Joi.string().required(),
   POSTGRES_PASSWORD: Joi.string().required(),
   POSTGRES_DB: Joi.string().required(),
+  // GOOGLE
+  GOOGLE_CLIENT_ID: Joi.string().required(),
+  GOOGLE_CLIENT_SECRET: Joi.string().required(),
+  GOOGLE_REDIRECT_URI: Joi.string().required(),
+  // KAKAO
+  KAKAO_API_URL: Joi.string().required(),
+  KAKAO_REST_API_KEY: Joi.string().required(),
+  KAKAO_REDIRECT_URI: Joi.string().required(),
 });
