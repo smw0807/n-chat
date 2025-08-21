@@ -9,17 +9,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
+import { Logger } from '@nestjs/common';
+import { Room } from './entity/room.entity';
 
 interface ChatMessageDto {
   roomId: number;
-  userId: string;
   message: string;
-}
-
-interface JoinRoomDto {
-  roomId: number;
-  userId: string;
-  username: string;
 }
 
 @WebSocketGateway({
@@ -28,6 +23,7 @@ interface JoinRoomDto {
   },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  private readonly logger = new Logger(ChatGateway.name);
   @WebSocketServer()
   server: Server;
 
@@ -39,7 +35,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly chatService: ChatService) {}
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    try {
+      this.logger.log(`Client connected: ${client.id}`);
+
+      // 연결 시점에 인증 확인
+      const token = this.extractTokenFromHeader(client);
+      if (!token) {
+        client.emit('error', { message: 'Authentication required' });
+        client.disconnect();
+        return;
+      }
+    } catch (error) {
+      this.logger.error('Connection error:', error);
+      client.emit('error', { message: 'Authentication failed' });
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
@@ -55,50 +65,108 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       this.connectedUsers.delete(client.id);
     }
-    console.log(`Client disconnected: ${client.id}`);
+    this.logger.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('createRoom')
+  handleCreateRoom(
+    @MessageBody() room: Room,
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      // 클라이언트에서 전송된 사용자 정보 사용
+      const user = client.handshake.auth.user;
+      client.emit('test', user);
+
+      if (!user) {
+        client.emit('error', { message: 'User not authenticated' });
+        return;
+      }
+
+      // Socket.IO 방 생성
+      client.join(room.id.toString());
+
+      // 사용자 정보 저장
+      this.connectedUsers.set(client.id, {
+        userId: user.id,
+        username: user.name,
+        roomId: room.id,
+      });
+
+      // 방 생성 성공 알림
+      client.emit('roomCreated', {
+        room,
+        message: `Room "${room.name}" created successfully`,
+      });
+
+      return { success: true, room };
+    } catch (error) {
+      this.logger.error('Error creating room:', error);
+      client.emit('error', {
+        message: 'Failed to create room',
+        details: error.message,
+      });
+      return { success: false, error: error.message };
+    }
   }
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
-    @MessageBody() joinRoomDto: JoinRoomDto,
+    @MessageBody() room: Room,
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId, userId, username } = joinRoomDto;
+    // 클라이언트에서 전송된 사용자 정보 사용
+    const user = client.handshake.auth.user;
+
+    if (!user) {
+      client.emit('error', { message: 'User not authenticated' });
+      return;
+    }
 
     // 클라이언트를 방에 참여시킴
-    client.join(roomId.toString());
+    client.join(room.id.toString());
 
     // 사용자 정보 저장
-    this.connectedUsers.set(client.id, { userId, username, roomId });
+    this.connectedUsers.set(client.id, {
+      userId: user.id,
+      username: user.name,
+      roomId: room.id,
+    });
 
     // 방의 다른 사용자들에게 새 사용자 입장 알림
-    client.to(roomId.toString()).emit('userJoined', {
-      userId,
-      username,
+    client.to(room.id.toString()).emit('userJoined', {
+      userId: user.id,
+      username: user.name,
       timestamp: new Date(),
     });
 
     // 방의 최근 메시지 히스토리 전송
     try {
       const recentMessages = await this.chatService.getRecentMessages(
-        roomId,
+        room.id,
         20,
       );
       client.emit('messageHistory', recentMessages.reverse());
     } catch (error) {
-      console.error('Error fetching message history:', error);
+      this.logger.error('Error fetching message history:', error);
     }
 
-    return { success: true, message: `Joined room: ${roomId}` };
+    return { success: true, message: `Joined room: ${room.id}` };
   }
 
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(
-    @MessageBody()
-    leaveRoomDto: { roomId: number; userId: string; username: string },
+    @MessageBody() leaveRoomDto: { roomId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId, userId, username } = leaveRoomDto;
+    const { roomId } = leaveRoomDto;
+
+    const user = client.handshake.auth.user;
+
+    if (!user) {
+      client.emit('error', { message: 'User not authenticated' });
+      return;
+    }
 
     // 클라이언트를 방에서 나가게 함
     client.leave(roomId.toString());
@@ -111,8 +179,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // 방의 다른 사용자들에게 사용자 퇴장 알림
     client.to(roomId.toString()).emit('userLeft', {
-      userId,
-      username,
+      userId: user.id,
+      username: user.name,
       timestamp: new Date(),
     });
 
@@ -124,11 +192,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() chatMessageDto: ChatMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId, userId, message } = chatMessageDto;
+    const { roomId, message } = chatMessageDto;
+
+    const user = client.handshake.auth.user;
+
+    if (!user) {
+      client.emit('error', { message: 'User not authenticated' });
+      return;
+    }
 
     try {
       // 메시지를 데이터베이스에 저장
-      const savedChat = await this.chatService.saveMessage(chatMessageDto);
+      const savedChat = await this.chatService.saveMessage({
+        roomId,
+        userId: user.id,
+        message,
+      });
 
       // 방의 모든 사용자에게 메시지 전송
       this.server.to(roomId.toString()).emit('newMessage', {
@@ -141,7 +220,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       return { success: true, messageId: savedChat.id };
     } catch (error) {
-      console.error('Error saving message:', error);
+      this.logger.error('Error saving message:', error);
       client.emit('messageError', {
         error: 'Failed to save message',
         details: error.message,
@@ -155,18 +234,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody()
     typingData: {
       roomId: number;
-      userId: string;
-      username: string;
       isTyping: boolean;
     },
     @ConnectedSocket() client: Socket,
   ) {
-    const { roomId, userId, username, isTyping } = typingData;
+    const { roomId, isTyping } = typingData;
+
+    const user = client.handshake.auth.user;
+
+    if (!user) {
+      return;
+    }
 
     // 방의 다른 사용자들에게 타이핑 상태 전송
     client.to(roomId.toString()).emit('userTyping', {
-      userId,
-      username,
+      userId: user.id,
+      username: user.name,
       isTyping,
     });
   }
@@ -179,14 +262,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId, limit = 50 } = data;
 
     try {
-      const messages = await this.chatService.getMessagesByRoomId(roomId);
+      const messages = await this.chatService.getRecentMessages(roomId, limit);
       client.emit('messageHistory', messages);
     } catch (error) {
-      console.error('Error fetching message history:', error);
+      this.logger.error('Error fetching message history:', error);
       client.emit('messageError', {
         error: 'Failed to fetch message history',
         details: error.message,
       });
     }
+  }
+
+  private extractTokenFromHeader(client: Socket): string | undefined {
+    const auth =
+      client.handshake.auth.token || client.handshake.headers.authorization;
+
+    if (!auth) {
+      return undefined;
+    }
+
+    if (auth.startsWith('Bearer ')) {
+      return auth.substring(7);
+    }
+
+    return auth;
   }
 }

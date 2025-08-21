@@ -1,13 +1,48 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  Body,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { AuthGuard } from '../auth/guard/auth.guard';
+import { CurrentUser } from '../auth/decorator/current.user';
+import { User } from '../user/entity/user.entity';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { ChatGateway } from './chat.gateway';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Get('rooms')
   async getRooms() {
     return await this.chatService.getRooms();
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('rooms')
+  async createRoom(
+    @Body() createRoomDto: CreateRoomDto,
+    @CurrentUser() user: User,
+  ) {
+    const room = await this.chatService.createRoom(createRoomDto, user);
+    this.chatGateway.server.emit('joinRoom', room);
+    return room;
+  }
+
+  @Delete('rooms/:roomId')
+  async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
+    await this.chatService.deleteRoom(roomId);
+    // this.chatGateway.server.emit('roomDeleted', roomId);
+    return { message: 'Room deleted successfully' };
   }
 
   @Get('room/:roomId/messages')

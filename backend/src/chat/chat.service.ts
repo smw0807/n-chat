@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Chat } from './entity/chat.entity';
 import { Room } from './entity/room.entity';
 import { User } from '../user/entity/user.entity';
+import { CreateRoomDto } from './dto/create-room.dto';
 
 interface ChatMessageDto {
   roomId: number;
@@ -29,7 +30,41 @@ export class ChatService {
     });
   }
 
-  // 방 생성(생성 후 socket.io 연결)
+  // 방 생성
+  async createRoom(createRoomDto: CreateRoomDto, user: User): Promise<Room> {
+    const { name, description, maxUsers, isPrivate } = createRoomDto;
+
+    // 새로운 방 생성
+    const room = this.roomRepository.create({
+      name,
+      description,
+      maxUsers: maxUsers || 50,
+      isPrivate: isPrivate || false,
+      user, // 방 생성자
+    });
+
+    const savedRoom = await this.roomRepository.save(room);
+
+    // 생성된 방 정보 반환 (Socket.IO에서 사용할 수 있도록)
+    const createdRoom = await this.roomRepository.findOne({
+      where: { id: savedRoom.id },
+      relations: ['user'],
+    });
+
+    if (!createdRoom) {
+      throw new Error('Failed to create room');
+    }
+
+    return createdRoom;
+  }
+
+  async deleteRoom(roomId: number): Promise<void> {
+    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    await this.roomRepository.delete(roomId);
+  }
 
   // 메시지 저장
   async saveMessage(chatMessageDto: ChatMessageDto): Promise<Chat> {

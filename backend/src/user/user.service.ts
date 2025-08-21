@@ -43,6 +43,10 @@ export class UserService {
     return this.userRepository.findOne({ where: { email } });
   }
 
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
   async updateLastLogin(email: string): Promise<void> {
     await this.userRepository.update({ email }, { lastLoginAt: new Date() });
   }
