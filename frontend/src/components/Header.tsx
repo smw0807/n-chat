@@ -2,6 +2,7 @@
 
 import useAuth from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 function Header() {
   const router = useRouter();
@@ -18,12 +19,30 @@ function Header() {
       );
     } else if (user) {
       return (
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded-md si"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+        <>
+          <div className="flex items-center gap-2">
+            <div>
+              {user.profileImage && (
+                <Image
+                  src={user.profileImage}
+                  alt="profile"
+                  width={32}
+                  height={32}
+                />
+              )}
+            </div>
+            <div>
+              <p>{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md si"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </>
       );
     } else {
       return (
