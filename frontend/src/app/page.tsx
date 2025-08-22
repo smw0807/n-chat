@@ -100,7 +100,7 @@ export default function Home() {
       <Header />
       {/* 채팅 메인 */}
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+        <h1 className="text-3xl font-bold text-right mb-8 text-gray-800">
           N-Chat
         </h1>
 
