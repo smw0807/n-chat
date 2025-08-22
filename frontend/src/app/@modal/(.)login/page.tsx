@@ -5,7 +5,7 @@ import { login, verifyToken } from '@/apis/auth';
 import useToken from '@/hooks/useToken';
 import { useUserStore } from '@/store/user';
 
-import Modal from '@/components/Modal';
+import Modal from '@/components/modal/ParallelModal';
 
 function LoginPage() {
   const router = useRouter();
