@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { CookiesProvider } from 'next-client-cookies/server';
 
 import './globals.css';
 
@@ -17,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        {children}
+        <CookiesProvider>{children}</CookiesProvider>
         {modal}
       </body>
     </html>
