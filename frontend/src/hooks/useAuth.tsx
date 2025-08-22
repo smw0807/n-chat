@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import useToken from './useToken';
 import { User, useUserStore } from '@/store/user';
@@ -7,6 +7,9 @@ import { refreshToken, verifyToken } from '@/apis/auth';
 const handleVerifyToken = async (accessToken: string) => {
   try {
     const res = await verifyToken(accessToken);
+    if (!res.ok) {
+      return null;
+    }
     const result = await res.json();
     if (result.success) {
       return result.data as User;
@@ -22,6 +25,9 @@ const handleVerifyToken = async (accessToken: string) => {
 const handleRefreshToken = async (refreshTokenValue: string) => {
   try {
     const res = await refreshToken(refreshTokenValue);
+    if (!res.ok) {
+      return null;
+    }
     const result = await res.json();
     if (result.success && result.token) {
       return {
@@ -41,14 +47,21 @@ export default function useAuth() {
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const verifyAndRefreshToken = async () => {
+    // 이미 초기화가 완료된 경우 중복 실행 방지
+    if (isInitialized.current) {
+      return;
+    }
+
     const accessToken = getToken('access');
     const refreshTokenValue = getToken('refresh');
 
     // 토큰이 전혀 없는 경우
     if (!accessToken && !refreshTokenValue) {
       setIsLoading(false);
+      isInitialized.current = true;
       return;
     }
 
@@ -58,6 +71,7 @@ export default function useAuth() {
       if (userData) {
         useUserStore.setState({ user: userData });
         setIsLoading(false);
+        isInitialized.current = true;
         return;
       }
     }
@@ -69,7 +83,7 @@ export default function useAuth() {
         setToken('access', newTokens.accessToken);
         setToken('refresh', newTokens.refreshToken);
 
-        // 갱신된 토큰에서 사용자 정보 추출 (중복 검증 제거)
+        // 갱신된 토큰에서 사용자 정보 추출
         const userData = await handleVerifyToken(newTokens.accessToken);
         if (userData) {
           useUserStore.setState({ user: userData });
@@ -85,14 +99,16 @@ export default function useAuth() {
       handleLogout();
     }
     setIsLoading(false);
+    isInitialized.current = true;
   };
 
   useEffect(() => {
     // 컴포넌트 마운트 시 한 번만 실행
-    if (!user) {
+    if (!user && !isInitialized.current) {
       verifyAndRefreshToken();
     } else {
       setIsLoading(false);
+      isInitialized.current = true;
     }
   }, []); // 빈 의존성 배열로 변경
 
@@ -107,6 +123,7 @@ export default function useAuth() {
     removeToken('access');
     removeToken('refresh');
     useUserStore.setState({ user: null });
+    isInitialized.current = false; // 로그아웃 시 초기화 상태 리셋
   };
 
   return { user, handleLogout, isLoading };
