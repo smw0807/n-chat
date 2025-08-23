@@ -32,7 +32,7 @@ export class ChatService {
 
   // 방 생성
   async createRoom(createRoomDto: CreateRoomDto, user: User): Promise<Room> {
-    const { name, description, maxUsers, isPrivate } = createRoomDto;
+    const { name, description, maxUsers, isPrivate, password } = createRoomDto;
 
     // 새로운 방 생성
     const room = this.roomRepository.create({
@@ -40,6 +40,7 @@ export class ChatService {
       description,
       maxUsers: maxUsers || 50,
       isPrivate: isPrivate || false,
+      password: password || null, // null 허용
       user, // 방 생성자
     });
 

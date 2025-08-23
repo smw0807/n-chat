@@ -3,4 +3,5 @@ export class CreateRoomDto {
   description?: string;
   maxUsers?: number;
   isPrivate?: boolean;
+  password?: string;
 }

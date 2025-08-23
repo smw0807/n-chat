@@ -33,6 +33,13 @@ export class Room {
   isPrivate: boolean;
 
   @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  password: string | null;
+
+  @Column({
     type: 'int',
     default: 10,
   })
