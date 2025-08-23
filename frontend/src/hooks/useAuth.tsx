@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import useToken from './useToken';
-import { User, useUserStore } from '@/store/user';
+import { useUserStore } from '@/store/user';
 import { refreshToken, verifyToken } from '@/apis/auth';
+import { User } from '@/models/user';
 
 const handleVerifyToken = async (accessToken: string) => {
   try {
