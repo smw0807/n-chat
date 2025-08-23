@@ -13,7 +13,7 @@ export default function useFetch() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: getToken('access') as string,
+          Authorization: `Bearer ${getToken('access')}`,
         },
         body: JSON.stringify(body),
       });
