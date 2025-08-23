@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useRooms from '@/hooks/useRooms';
 import Modal from '@/components/modal/ParallelModal';
+import PortalModal from '@/components/modal/PortalModal';
 
 function CreateRoomPage() {
   const router = useRouter();
@@ -12,14 +13,17 @@ function CreateRoomPage() {
   const [maxUsers, setMaxUsers] = useState(2);
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState('');
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [error, setError] = useState('');
   const handleCreate = async () => {
     if (!name || !description || !maxUsers) {
-      alert('모든 필드를 입력해주세요.');
+      setError('모든 필드를 입력해주세요.');
+      setIsOpen(true);
       return;
     }
     if (isPrivate && !password) {
-      alert('비밀번호를 입력해주세요.');
+      setError('비밀번호를 입력해주세요.');
+      setIsOpen(true);
       return;
     }
     await create({ name, description, maxUsers, isPrivate, password });
@@ -29,6 +33,12 @@ function CreateRoomPage() {
   return (
     <Modal title="방 만들기" size="sm">
       <div>
+        <PortalModal
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          title="방 만들기"
+          content={error}
+        />
         <div className="flex gap-4 mb-4 items-center">
           <label htmlFor="name" className="w-1/5">
             방 이름
