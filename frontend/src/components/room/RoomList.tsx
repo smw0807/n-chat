@@ -1,25 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { getRooms } from '@/apis/chat';
-import useFetch from '@/hooks/useFetch';
+import { useEffect } from 'react';
+import useRooms from '@/hooks/useRooms';
+import { useRoomsStore } from '@/store/rooms';
 
 import RoomCard from './RoomCard';
 import Empty from './Empty';
-import { Room } from '@/models/room';
 
 function RoomList() {
-  const { isLoading, error, fetchData } = useFetch();
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const { rooms } = useRoomsStore();
+  const { fetchRooms } = useRooms();
+
   useEffect(() => {
-    const fetchRooms = async () => {
-      const data = await fetchData(getRooms, 'GET');
-      console.log(data);
-      setRooms(data);
-    };
     fetchRooms();
   }, []);
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+
   return (
     <>
       {rooms.length === 0 ? (

@@ -1,4 +1,5 @@
 import Header from '@/components/Header';
+import MainButtons from '@/components/MainButtons';
 import RoomList from '@/components/room/RoomList';
 
 export default function Home() {
@@ -9,7 +10,7 @@ export default function Home() {
       {/* 채팅 메인 */}
       <main className="container mx-auto px-4 py-8">
         <div className="text-3xl font-bold text-right mb-8 text-gray-800">
-          N-Chat
+          <MainButtons />
         </div>
 
         {/* 방 리스트 */}
