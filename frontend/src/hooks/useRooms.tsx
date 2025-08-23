@@ -1,5 +1,6 @@
 import useFetch from './useFetch';
-import { getRooms } from '@/apis/chat';
+import { getRooms, createRoom } from '@/apis/chat';
+import { CreateRoom } from '@/models/room';
 import { useRoomsStore } from '@/store/rooms';
 
 export default function useRooms() {
@@ -11,5 +12,11 @@ export default function useRooms() {
     setRooms(data);
   };
 
-  return { rooms, fetchRooms, isLoading, error };
+  const create = async (room: CreateRoom) => {
+    const data = await fetchData(createRoom, 'POST', room);
+    console.log(data);
+    // setRooms([...rooms, data]);
+  };
+
+  return { rooms, fetchRooms, create, isLoading, error };
 }

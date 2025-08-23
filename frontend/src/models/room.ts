@@ -9,3 +9,11 @@ export interface Room {
   createdAt: string;
   user: User;
 }
+
+export interface CreateRoom {
+  name: string;
+  description: string;
+  isPrivate: boolean;
+  maxUsers: number;
+  password: string;
+}

@@ -1,15 +1,7 @@
+import { Room } from '@/models/room';
+
 interface RoomCardProps {
-  room: {
-    id: number;
-    name: string;
-    description: string;
-    maxUsers: number;
-    isPrivate: boolean;
-    user: {
-      id: number;
-      name: string;
-    };
-  };
+  room: Room;
 }
 function RoomCard({ room }: RoomCardProps) {
   return (

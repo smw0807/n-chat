@@ -6,7 +6,7 @@ export default function useFetch() {
   const [error, setError] = useState(null);
   const { getToken } = useToken();
 
-  const fetchData = async (url: string, method: string) => {
+  const fetchData = async (url: string, method: string, body?: any) => {
     setIsLoading(true);
     try {
       const response = await fetch(url, {
@@ -15,6 +15,7 @@ export default function useFetch() {
           'Content-Type': 'application/json',
           Authorization: getToken('access') as string,
         },
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
