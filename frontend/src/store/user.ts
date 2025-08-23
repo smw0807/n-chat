@@ -1,23 +1,12 @@
 import { create } from 'zustand';
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  type: string;
-  profileImage: string | null;
-  iat: number;
-  exp: number;
-}
-interface UserStore {
+import { User } from '@/models/user';
+
+export const useUserStore = create<{
   user: User | null;
   setUser: (user: User) => void;
-}
-
-export const useUserStore = create<UserStore>((set) => ({
+}>((set) => ({
   user: null,
   setUser: (user) => {
-    console.log('user : ', user);
     set({ user });
   },
 }));

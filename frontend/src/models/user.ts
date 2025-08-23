@@ -1,6 +1,10 @@
 export interface User {
   id: number;
-  name: string;
   email: string;
-  profileImage: string;
+  name: string;
+  role?: string;
+  type?: string;
+  profileImage?: string;
+  iat?: number;
+  exp?: number;
 }
