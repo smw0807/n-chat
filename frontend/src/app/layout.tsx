@@ -18,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <div id="modal"></div>
         <CookiesProvider>{children}</CookiesProvider>
         {modal}
       </body>
