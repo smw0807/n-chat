@@ -27,6 +27,20 @@ export class ChatService {
   async getRooms(): Promise<Room[]> {
     return await this.roomRepository.find({
       relations: ['user'],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isPrivate: true,
+        maxUsers: true,
+        createdAt: true,
+        user: {
+          id: true,
+          name: true,
+          email: true,
+          profileImage: true,
+        },
+      },
     });
   }
 
