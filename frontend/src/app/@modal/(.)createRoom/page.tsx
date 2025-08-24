@@ -13,6 +13,7 @@ function CreateRoomPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreate = async () => {
     if (!name || !description || !maxUsers) {
@@ -23,14 +24,35 @@ function CreateRoomPage() {
       setError('비밀번호를 입력해주세요.');
       return;
     }
-    await create({ name, description, maxUsers, isPrivate, password });
-    router.back();
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await create({
+        name,
+        description,
+        maxUsers,
+        isPrivate,
+        password,
+      });
+      router.back();
+    } catch (err) {
+      console.error('방 생성 실패:', err);
+      setError('방 생성에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Modal title="방 만들기" size="sm">
       <div>
-        <div className="text-red-500">{error}</div>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <div className="flex gap-4 mb-4 items-center">
           <label htmlFor="name" className="w-1/5">
             방 이름
@@ -107,13 +129,19 @@ function CreateRoomPage() {
       <div className="flex justify-end gap-4">
         <button
           onClick={handleCreate}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          disabled={isLoading}
+          className={`px-4 py-2 rounded-md transition-colors ${
+            isLoading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600'
+          } text-white`}
         >
-          방 만들기
+          {isLoading ? '생성 중...' : '방 만들기'}
         </button>
         <button
-          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={() => router.back()}
+          disabled={isLoading}
         >
           닫기
         </button>

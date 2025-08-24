@@ -15,7 +15,7 @@ export default function useRooms() {
   const create = async (room: CreateRoom) => {
     const data = await fetchData(createRoom, 'POST', room);
     console.log(data);
-    // setRooms([...rooms, data]);
+    setRooms([...rooms, data]);
   };
 
   return { rooms, fetchRooms, create, isLoading, error };
