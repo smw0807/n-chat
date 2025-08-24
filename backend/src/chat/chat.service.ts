@@ -64,6 +64,20 @@ export class ChatService {
     const createdRoom = await this.roomRepository.findOne({
       where: { id: savedRoom.id },
       relations: ['user'],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isPrivate: true,
+        maxUsers: true,
+        createdAt: true,
+        user: {
+          id: true,
+          name: true,
+          email: true,
+          profileImage: true,
+        },
+      },
     });
 
     if (!createdRoom) {
