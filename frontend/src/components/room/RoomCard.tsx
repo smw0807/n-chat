@@ -1,11 +1,17 @@
+'use client';
+import { useRouter } from 'next/navigation';
 import { Room } from '@/models/room';
 
 interface RoomCardProps {
   room: Room;
 }
 function RoomCard({ room }: RoomCardProps) {
+  const router = useRouter();
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer border border-gray-200">
+    <div
+      onClick={() => router.push(`/chat/${room.id}`)}
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer border border-gray-200"
+    >
       {/* 방 이미지 또는 아이콘 */}
       <div className="h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-t-lg flex items-center justify-center">
         <div className="text-white text-4xl font-bold">
