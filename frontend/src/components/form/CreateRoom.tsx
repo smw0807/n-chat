@@ -2,9 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useRooms from '@/hooks/useRooms';
-import Modal from '@/components/modal/ParallelModal';
-
-function CreateRoomPage() {
+function CreateRoom({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
   const router = useRouter();
   const { create } = useRooms();
   const [name, setName] = useState('');
@@ -29,14 +27,14 @@ function CreateRoomPage() {
     setError('');
 
     try {
-      await create({
+      const data = await create({
         name,
         description,
         maxUsers,
         isPrivate,
         password,
       });
-      router.back();
+      router.replace(`/chat/${data.id}`);
     } catch (err) {
       console.error('방 생성 실패:', err);
       setError('방 생성에 실패했습니다.');
@@ -44,9 +42,8 @@ function CreateRoomPage() {
       setIsLoading(false);
     }
   };
-
   return (
-    <Modal title="방 만들기" size="sm">
+    <div>
       <div>
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -140,14 +137,14 @@ function CreateRoomPage() {
         </button>
         <button
           className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          onClick={() => router.back()}
+          onClick={() => setIsOpen(false)}
           disabled={isLoading}
         >
           닫기
         </button>
       </div>
-    </Modal>
+    </div>
   );
 }
 
-export default CreateRoomPage;
+export default CreateRoom;
