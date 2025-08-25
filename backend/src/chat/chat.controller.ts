@@ -27,6 +27,11 @@ export class ChatController {
     return await this.chatService.getRooms();
   }
 
+  @Get('rooms/:roomId')
+  async getRoomInfo(@Param('roomId', ParseIntPipe) roomId: number) {
+    return await this.chatService.getRoomInfo(roomId);
+  }
+
   @UseGuards(AuthGuard)
   @Post('rooms')
   async createRoom(

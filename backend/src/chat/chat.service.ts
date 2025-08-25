@@ -44,6 +44,27 @@ export class ChatService {
     });
   }
 
+  async getRoomInfo(roomId: number): Promise<Room | null> {
+    return await this.roomRepository.findOne({
+      where: { id: roomId },
+      relations: ['user'],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isPrivate: true,
+        maxUsers: true,
+        createdAt: true,
+        user: {
+          id: true,
+          name: true,
+          email: true,
+          profileImage: true,
+        },
+      },
+    });
+  }
+
   // 방 생성
   async createRoom(createRoomDto: CreateRoomDto, user: User): Promise<Room> {
     const { name, description, maxUsers, isPrivate, password } = createRoomDto;
