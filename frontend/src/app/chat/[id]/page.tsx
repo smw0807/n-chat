@@ -1,36 +1,23 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { io } from 'socket.io-client';
 import dayjs from 'dayjs';
+
 import useAuth from '@/hooks/useAuth';
 import useToken from '@/hooks/useToken';
-import Image from 'next/image';
+import useChat from '@/hooks/useChat';
+
 import { User } from '@/models/user';
 import { Message } from '@/models/chat';
-
-// 임시 데이터 (나중에 API로 교체)
-const mockRoom = {
-  id: '1',
-  name: '개발자 채팅방',
-  description: '개발 관련 이야기를 나누는 방입니다.',
-  isPrivate: false,
-  maxUsers: 10,
-  currentUsers: 5,
-};
-
-const mockParticipants = [
-  { id: '1', name: '김개발', profileImage: null },
-  { id: '2', name: '이디자인', profileImage: null },
-  { id: '3', name: '박기획', profileImage: null },
-  { id: '4', name: '최프론트', profileImage: null },
-  { id: '5', name: '정백엔드', profileImage: null },
-];
 
 function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const { user } = useAuth();
   const { getToken } = useToken();
+  const { room } = useChat(parseInt(id));
+
   const [joinUsers, setJoinUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -86,6 +73,11 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 
     socket.current.on('messageHistory', (history: Message[]) => {
       setMessages(history);
+    });
+
+    socket.current.on('userLeft', (message: User) => {
+      console.log('user left', message);
+      setJoinUsers((prev) => prev.filter((user) => user.id !== message.id));
     });
 
     socket.current.on('error', (error: any) => {
@@ -149,10 +141,10 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
             </button>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                {mockRoom.name}
+                {room?.name}
               </h1>
               <p className="text-sm text-gray-500">
-                {mockRoom.currentUsers}명 참여 중 • {mockRoom.description}
+                {joinUsers.length}명 참여 중 • {room?.description}
               </p>
             </div>
           </div>
@@ -203,33 +195,33 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              참여자 ({mockParticipants.length})
+              참여자 ({joinUsers.length})
             </h2>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {mockParticipants.map((participant) => (
+            {joinUsers.map((user) => (
               <div
-                key={participant.id}
+                key={user.id}
                 className="flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="relative">
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    {participant.profileImage ? (
+                    {user.profileImage ? (
                       <Image
-                        src={participant.profileImage}
-                        alt={participant.name}
+                        src={user.profileImage}
+                        alt={user.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
                       <span className="text-gray-600 font-medium">
-                        {participant.name.charAt(0)}
+                        {user.name.charAt(0)}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {participant.name}
+                    {user.name}
                   </p>
                 </div>
               </div>
