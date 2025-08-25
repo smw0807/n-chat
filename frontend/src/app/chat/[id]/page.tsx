@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
+import dayjs from 'dayjs';
 import useAuth from '@/hooks/useAuth';
+import useToken from '@/hooks/useToken';
 import Image from 'next/image';
+import { User } from '@/models/user';
+import { Message } from '@/models/chat';
 
 // 임시 데이터 (나중에 API로 교체)
 const mockRoom = {
@@ -22,57 +27,77 @@ const mockParticipants = [
   { id: '5', name: '정백엔드', profileImage: null },
 ];
 
-interface Message {
-  id: string;
-  userId: number;
-  userName: string;
-  message: string;
-  timestamp: Date;
-}
-
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    userId: 1,
-    userName: '김개발',
-    message: '안녕하세요! 오늘 날씨가 좋네요.',
-    timestamp: new Date(Date.now() - 1000 * 60 * 5),
-  },
-  {
-    id: '2',
-    userId: 2,
-    userName: '이디자인',
-    message: '네, 정말 좋은 날씨입니다!',
-    timestamp: new Date(Date.now() - 1000 * 60 * 4),
-  },
-  {
-    id: '3',
-    userId: 3,
-    userName: '박기획',
-    message: '오늘 회의 시간에 대해 논의해볼까요?',
-    timestamp: new Date(Date.now() - 1000 * 60 * 3),
-  },
-  {
-    id: '4',
-    userId: 1,
-    userName: '김개발',
-    message: '좋은 아이디어네요! 오후 2시는 어떠신가요?',
-    timestamp: new Date(Date.now() - 1000 * 60 * 2),
-  },
-  {
-    id: '5',
-    userId: 4,
-    userName: '최프론트',
-    message: '저도 2시에 가능합니다!',
-    timestamp: new Date(Date.now() - 1000 * 60 * 1),
-  },
-];
-
-function ChatPage() {
+function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const { getToken } = useToken();
+  const [joinUsers, setJoinUsers] = useState<User[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 웹소켓 연결 설정
+  const socket = useRef<any>(null);
+
+  useEffect(() => {
+    // 토큰 가져오기
+    const token = getToken('access');
+
+    if (!token || !user) {
+      console.log('No token or user found');
+      return;
+    }
+
+    // 웹소켓 연결 설정
+    socket.current = io('http://localhost:3000', {
+      auth: {
+        token: token,
+        user: user,
+      },
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+    });
+
+    socket.current.on('connect', () => {
+      console.log('Connected to server');
+      setIsConnected(true);
+      socket.current.emit('joinRoom', { id: parseInt(id) });
+    });
+
+    socket.current.on('connect_error', (error: any) => {
+      console.error('Connection error:', error);
+      setIsConnected(false);
+    });
+
+    socket.current.on('disconnect', (reason: string) => {
+      console.log('Disconnected:', reason);
+      setIsConnected(false);
+    });
+
+    socket.current.on('userJoined', (message: User) => {
+      console.log('join user', message);
+      setJoinUsers((prev) => [...prev, message]);
+    });
+
+    socket.current.on('newMessage', (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    socket.current.on('messageHistory', (history: Message[]) => {
+      setMessages(history);
+    });
+
+    socket.current.on('error', (error: any) => {
+      console.error('Socket error:', error);
+    });
+
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+  }, [user, id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -84,26 +109,19 @@ function ChatPage() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user) return;
+    if (!newMessage.trim() || !user || !isConnected) return;
 
-    const message: Message = {
-      id: Date.now().toString(),
-      userId: user.id,
-      userName: user.name,
+    // 웹소켓을 통해 메시지 전송
+    socket.current.emit('sendMessage', {
+      roomId: parseInt(id),
       message: newMessage.trim(),
-      timestamp: new Date(),
-    };
+    });
 
-    setMessages((prev) => [...prev, message]);
     setNewMessage('');
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  console.log('join users', joinUsers);
+  console.log('messages', messages);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -139,6 +157,21 @@ function ChatPage() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            {/* 연결 상태 표시 */}
+            <div
+              className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
+                isConnected
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              ></div>
+              <span>{isConnected ? '연결됨' : '연결 안됨'}</span>
+            </div>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <svg
                 className="w-5 h-5"
@@ -212,30 +245,30 @@ function ChatPage() {
               <div
                 key={message.id}
                 className={`flex ${
-                  message.userId === user?.id ? 'justify-end' : 'justify-start'
+                  message.user.id === user?.id ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.userId === user?.id
+                    message.user.id === user?.id
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-100 text-gray-900'
                   }`}
                 >
-                  {message.userId !== user?.id && (
+                  {message.user.id !== user?.id && (
                     <p className="text-xs font-medium mb-1 opacity-75">
-                      {message.userName}
+                      {message.user.name}
                     </p>
                   )}
                   <p className="text-sm">{message.message}</p>
                   <p
                     className={`text-xs mt-1 ${
-                      message.userId === user?.id
+                      message.user.id === user?.id
                         ? 'text-blue-100'
                         : 'text-gray-500'
                     }`}
                   >
-                    {formatTime(message.timestamp)}
+                    {dayjs(message.createdAt).format('YYYY-MM-DD HH:mm:ss')}
                   </p>
                 </div>
               </div>
@@ -255,7 +288,7 @@ function ChatPage() {
               />
               <button
                 type="submit"
-                disabled={!newMessage.trim()}
+                disabled={!newMessage.trim() || !isConnected}
                 className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 전송
