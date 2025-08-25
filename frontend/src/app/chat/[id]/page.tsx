@@ -37,7 +37,7 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     }
 
     // 웹소켓 연결 설정
-    socket.current = io('http://localhost:3000', {
+    socket.current = io('http://localhost:3000/chat', {
       auth: {
         token: token,
         user: user,
