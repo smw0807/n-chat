@@ -27,9 +27,12 @@ interface ChatMessageDto {
     ],
     credentials: true,
   },
+  namespace: '/chat',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
+  private readonly namespace = '/chat';
+
   @WebSocketServer()
   server: Server;
 
@@ -87,19 +90,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() room: Room,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('#### joinRoom ####');
+    console.log('#### joinRoom ####', client.id);
     // 클라이언트에서 전송된 사용자 정보 사용
     const user = client.handshake.auth.user;
-    console.log(user);
 
     if (!user) {
       client.emit('error', { message: 'User not authenticated' });
       return;
     }
 
+    const roomInfo = await this.chatService.getRoomInfo(room.id);
+    if (!roomInfo) {
+      client.emit('error', { message: 'Room not found' });
+      return;
+    }
+    const maxUsers = roomInfo.maxUsers;
+    console.log(maxUsers);
+    // console.log(roomInfo);
+
     // 클라이언트를 방에 참여시킴
     client.join(room.id.toString());
-    console.log('join room', room.id);
+
+    // 방의 최대 인원 체크
+    // const currentUsers = rooms.get(room.id.toString())?.size || 0;
+    // if (currentUsers >= maxUsers) {
+    //   client.emit('error', { message: 'Room is full' });
+    //   return;
+    // }
 
     // 사용자 정보 저장
     this.connectedUsers.set(client.id, {
@@ -107,12 +124,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId: room.id,
     });
 
-    console.log('connected users', this.connectedUsers);
-
     // 방의 다른 사용자들에게 새 사용자 입장 알림
-    client
-      .to(room.id.toString())
-      .emit('userJoined', this.connectedUsers.get(client.id));
+    client.emit('userJoined', this.connectedUsers.get(client.id));
 
     // 방의 최근 메시지 히스토리 전송
     try {
@@ -120,7 +133,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         room.id,
         20,
       );
-      client.emit('messageHistory', recentMessages.reverse());
+      client.emit('messageHistory', recentMessages);
     } catch (error) {
       this.logger.error('Error fetching message history:', error);
     }
@@ -178,14 +191,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId: user.id,
         message,
       });
+      console.log(savedChat);
 
       // 방의 모든 사용자에게 메시지 전송
-      this.server.to(roomId.toString()).emit('newMessage', {
+      client.emit('newMessage', {
         id: savedChat.id,
-        userId: savedChat.user.id,
-        username: savedChat.user.name,
         message: savedChat.message,
         timestamp: savedChat.createdAt,
+        user,
       });
 
       return { success: true, messageId: savedChat.id };
