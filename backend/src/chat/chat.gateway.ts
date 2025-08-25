@@ -19,7 +19,13 @@ interface ChatMessageDto {
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'http://127.0.0.1:3001',
+      'http://127.0.0.1:3000',
+    ],
+    credentials: true,
   },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -38,17 +44,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       this.logger.log(`Client connected: ${client.id}`);
 
-      // 연결 시점에 인증 확인
+      // 연결 시점에 인증 확인 (개발 환경에서는 임시로 허용)
       const token = this.extractTokenFromHeader(client);
-      if (!token) {
-        client.emit('error', { message: 'Authentication required' });
-        client.disconnect();
+      const user = client.handshake.auth.user;
+
+      if (!token && !user) {
+        this.logger.warn(
+          'No authentication provided, but allowing connection for development',
+        );
+        // 개발 환경에서는 임시로 연결 허용
         return;
       }
+
+      this.logger.log(`User authenticated: ${user?.name || 'Unknown'}`);
     } catch (error) {
       this.logger.error('Connection error:', error);
-      client.emit('error', { message: 'Authentication failed' });
-      client.disconnect();
+      // 개발 환경에서는 연결 유지
+      this.logger.warn(
+        'Connection error occurred, but maintaining connection for development',
+      );
     }
   }
 
@@ -68,55 +82,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('createRoom')
-  handleCreateRoom(
-    @MessageBody() room: Room,
-    @ConnectedSocket() client: Socket,
-  ) {
-    try {
-      // 클라이언트에서 전송된 사용자 정보 사용
-      const user = client.handshake.auth.user;
-      client.emit('test', user);
-
-      if (!user) {
-        client.emit('error', { message: 'User not authenticated' });
-        return;
-      }
-
-      // Socket.IO 방 생성
-      client.join(room.id.toString());
-
-      // 사용자 정보 저장
-      this.connectedUsers.set(client.id, {
-        userId: user.id,
-        username: user.name,
-        roomId: room.id,
-      });
-
-      // 방 생성 성공 알림
-      client.emit('roomCreated', {
-        room,
-        message: `Room "${room.name}" created successfully`,
-      });
-
-      return { success: true, room };
-    } catch (error) {
-      this.logger.error('Error creating room:', error);
-      client.emit('error', {
-        message: 'Failed to create room',
-        details: error.message,
-      });
-      return { success: false, error: error.message };
-    }
-  }
-
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     @MessageBody() room: Room,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('#### joinRoom ####');
     // 클라이언트에서 전송된 사용자 정보 사용
     const user = client.handshake.auth.user;
+    console.log(user);
 
     if (!user) {
       client.emit('error', { message: 'User not authenticated' });
@@ -125,20 +99,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // 클라이언트를 방에 참여시킴
     client.join(room.id.toString());
+    console.log('join room', room.id);
 
     // 사용자 정보 저장
     this.connectedUsers.set(client.id, {
-      userId: user.id,
-      username: user.name,
+      ...user,
       roomId: room.id,
     });
 
+    console.log('connected users', this.connectedUsers);
+
     // 방의 다른 사용자들에게 새 사용자 입장 알림
-    client.to(room.id.toString()).emit('userJoined', {
-      userId: user.id,
-      username: user.name,
-      timestamp: new Date(),
-    });
+    client
+      .to(room.id.toString())
+      .emit('userJoined', this.connectedUsers.get(client.id));
 
     // 방의 최근 메시지 히스토리 전송
     try {
@@ -178,11 +152,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // 방의 다른 사용자들에게 사용자 퇴장 알림
-    client.to(roomId.toString()).emit('userLeft', {
-      userId: user.id,
-      username: user.name,
-      timestamp: new Date(),
-    });
+    client.to(roomId.toString()).emit('userLeft', user);
 
     return { success: true, message: `Left room: ${roomId}` };
   }
