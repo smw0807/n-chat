@@ -101,33 +101,41 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const roomInfo = await this.chatService.getRoomInfo(room.id);
     if (!roomInfo) {
-      client.emit('error', { message: 'Room not found' });
+      client.emit('error', { message: '채팅방을 찾을 수 없습니다.' });
       return;
     }
     const maxUsers = roomInfo.maxUsers;
-    console.log(maxUsers);
-    // console.log(roomInfo);
+
+    // 방 인원 체크
+    const roomSockets = await this.server.in(room.id.toString()).fetchSockets();
+    const currentUsers = roomSockets.length;
+
+    if (currentUsers >= maxUsers) {
+      client.emit('error', { message: '채팅방 인원이 가득 찼습니다.' });
+      return;
+    }
 
     // 클라이언트를 방에 참여시킴
     client.join(room.id.toString());
 
-    // 방의 최대 인원 체크
-    // const currentUsers = rooms.get(room.id.toString())?.size || 0;
-    // if (currentUsers >= maxUsers) {
-    //   client.emit('error', { message: 'Room is full' });
-    //   return;
-    // }
-
-    // 사용자 정보 저장
+    // 사용자 정보 저장 (client.id를 키로 사용)
     this.connectedUsers.set(client.id, {
       ...user,
       roomId: room.id,
     });
 
     // 방의 다른 사용자들에게 새 사용자 입장 알림
-    client.emit('userJoined', this.connectedUsers.get(client.id));
+    this.server
+      .to(room.id.toString())
+      .emit('userJoined', this.connectedUsers.get(client.id));
 
-    // 방의 최근 메시지 히스토리 전송
+    // 방에 있는 모든 사용자 목록을 새로 참여한 사용자에게 전송
+    const roomUserIds = Array.from(this.connectedUsers.values()).filter(
+      (user) => user.roomId === room.id,
+    );
+    client.emit('roomUsers', roomUserIds);
+
+    // 방의 최근 메시지 히스토리 전송 (방에 참여한 사용자에게만)
     try {
       const recentMessages = await this.chatService.getRecentMessages(
         room.id,
@@ -193,8 +201,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
       console.log(savedChat);
 
-      // 방의 모든 사용자에게 메시지 전송
-      client.emit('newMessage', {
+      // 방의 모든 사용자에게 메시지 전송 (자신 포함)
+      this.server.to(roomId.toString()).emit('newMessage', {
         id: savedChat.id,
         message: savedChat.message,
         timestamp: savedChat.createdAt,
