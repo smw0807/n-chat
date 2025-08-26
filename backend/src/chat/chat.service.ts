@@ -153,7 +153,7 @@ export class ChatService {
     return await this.chatRepository.find({
       where: { room: { id: roomId } },
       relations: ['user', 'room'],
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' },
       take: limit,
     });
   }
