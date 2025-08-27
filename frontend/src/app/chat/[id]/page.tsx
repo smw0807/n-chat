@@ -138,6 +138,32 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     setNewMessage('');
   };
 
+  // 방 나가기 확인 모달
+  const confirmLeaveRoom = () => {
+    setModalContent(
+      <div className="flex flex-col items-center justify-center">
+        <p className="text-lg font-bold">정말 나가시겠습니까?</p>
+      </div>
+    );
+    setModalFooter(
+      <div className="flex justify-end space-x-2">
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded-md"
+          onClick={handleLeaveRoom}
+        >
+          확인
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-500 text-white rounded-md"
+          onClick={() => setIsOpen(false)}
+        >
+          취소
+        </button>
+      </div>
+    );
+    setIsOpen(true);
+  };
+
   const handleLeaveRoom = () => {
     socket.current.emit('leaveRoom', { roomId: parseInt(id) });
     router.push('/');
@@ -157,7 +183,7 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleLeaveRoom}
+                onClick={confirmLeaveRoom}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <svg
