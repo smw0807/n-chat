@@ -221,7 +221,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId: user.id,
         message,
       });
-      console.log(savedChat);
 
       // 방의 모든 사용자에게 메시지 전송 (자신 포함)
       this.server.to(roomId.toString()).emit('newMessage', {
