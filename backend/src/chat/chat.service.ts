@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Chat } from './entity/chat.entity';
 import { Room } from './entity/room.entity';
 import { User } from '../user/entity/user.entity';
@@ -21,6 +21,7 @@ export class ChatService {
     private roomRepository: Repository<Room>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
 
   // 채팅 방 목록
@@ -109,11 +110,27 @@ export class ChatService {
   }
 
   async deleteRoom(roomId: number): Promise<void> {
-    const room = await this.roomRepository.findOne({ where: { id: roomId } });
-    if (!room) {
-      throw new Error('Room not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      const room = await this.roomRepository.findOne({ where: { id: roomId } });
+      console.log(room);
+      if (!room) {
+        throw new Error('Room not found');
+      }
+
+      await this.chatRepository.delete({ room: { id: room.id } });
+      await this.roomRepository.delete(room.id);
+
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-    await this.roomRepository.delete(roomId);
   }
 
   // 메시지 저장
