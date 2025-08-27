@@ -11,6 +11,23 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { Logger } from '@nestjs/common';
 import { Room } from './entity/room.entity';
+/*
+1. client.emit(): 1:1 통신 (특정 클라이언트에게만)
+  - 대상: 해당 client (메시지를 보낸 클라이언트)에게만 전송
+  - 용도: 개인적인 응답이나 데이터 전송
+  - 예시:
+    - 방에 참여한 사용자에게 메시지 히스토리 전송
+    - 에러 메시지 전송
+    - 개인 설정 정보 전송
+
+2. this.server.to().emit(): 1:N 통신 (방의 모든 클라이언트에게)
+  - 대상: 해당 방에 있는 모든 클라이언트에게 전송
+  - 용도: 방 전체에 브로드캐스트
+  - 예시:
+    - 사용자 입장/퇴장 알림
+    - 새로운 메시지 전송
+    - 방 상태 변경 알림
+*/
 
 interface ChatMessageDto {
   roomId: number;
@@ -150,7 +167,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(
+  async handleLeaveRoom(
     @MessageBody() leaveRoomDto: { roomId: number },
     @ConnectedSocket() client: Socket,
   ) {
@@ -172,8 +189,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userInfo.roomId = undefined;
     }
 
-    // 방의 다른 사용자들에게 사용자 퇴장 알림
-    client.to(roomId.toString()).emit('userLeft', user);
+    const roomSockets = await this.server.in(roomId.toString()).fetchSockets();
+    if (roomSockets.length === 0) {
+      // 방에 남아있는 사용자가 없으면 방 삭제
+      await this.chatService.deleteRoom(roomId);
+    } else {
+      // 방의 다른 사용자들에게 사용자 퇴장 알림
+      this.server.to(roomId.toString()).emit('userLeft', user);
+    }
 
     return { success: true, message: `Left room: ${roomId}` };
   }

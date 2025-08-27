@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
 import dayjs from 'dayjs';
 
@@ -17,6 +18,7 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { user } = useAuth();
   const { getToken } = useToken();
   const { room } = useChat(parseInt(id));
+  const router = useRouter();
 
   const [joinUsers, setJoinUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -67,6 +69,10 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
       setJoinUsers((prev) => [...prev, message]);
     });
 
+    socket.current.on('roomUsers', (users: User[]) => {
+      setJoinUsers(users);
+    });
+
     socket.current.on('newMessage', (message: Message) => {
       setMessages((prev) => [...prev, message]);
     });
@@ -76,7 +82,6 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     });
 
     socket.current.on('userLeft', (message: User) => {
-      console.log('user left', message);
       setJoinUsers((prev) => prev.filter((user) => user.id !== message.id));
     });
 
@@ -112,8 +117,10 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     setNewMessage('');
   };
 
-  console.log('join users', joinUsers);
-  console.log('messages', messages);
+  const handleLeaveRoom = () => {
+    socket.current.emit('leaveRoom', { roomId: parseInt(id) });
+    router.push('/');
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -122,7 +129,7 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => window.history.back()}
+              onClick={handleLeaveRoom}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <svg
