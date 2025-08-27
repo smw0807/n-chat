@@ -107,12 +107,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() room: Room,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('#### joinRoom ####', client.id);
     // 클라이언트에서 전송된 사용자 정보 사용
     const user = client.handshake.auth.user;
 
     if (!user) {
-      client.emit('error', { message: 'User not authenticated' });
+      client.emit('error', { message: '사용자 정보를 찾을 수 없습니다.' });
       return;
     }
 

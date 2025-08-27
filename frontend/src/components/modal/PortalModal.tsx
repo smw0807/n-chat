@@ -43,7 +43,9 @@ function PortalModal({
         <div className="p-6">{content}</div>
 
         {/* Footer */}
-        {footer}
+        <div className="flex justify-end p-3 border-t border-gray-200">
+          {footer}
+        </div>
       </div>
     </div>,
     document.getElementById('modal') as HTMLElement
