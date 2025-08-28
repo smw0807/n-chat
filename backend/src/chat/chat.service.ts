@@ -126,7 +126,6 @@ export class ChatService {
       await queryRunner.startTransaction();
 
       const room = await this.roomRepository.findOne({ where: { id: roomId } });
-      console.log(room);
       if (!room) {
         throw new Error('Room not found');
       }
