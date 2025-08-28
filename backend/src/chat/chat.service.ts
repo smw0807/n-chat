@@ -5,6 +5,7 @@ import { Chat } from './entity/chat.entity';
 import { Room } from './entity/room.entity';
 import { User } from '../user/entity/user.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { CheckPasswordDto } from './dto/join-room.dto';
 
 interface ChatMessageDto {
   roomId: number;
@@ -45,6 +46,7 @@ export class ChatService {
     });
   }
 
+  // 방 정보 조회
   async getRoomInfo(roomId: number): Promise<Room | null> {
     return await this.roomRepository.findOne({
       where: { id: roomId },
@@ -64,6 +66,13 @@ export class ChatService {
         },
       },
     });
+  }
+
+  // 방 패스워드 확인
+  async checkPassword(checkPasswordDto: CheckPasswordDto): Promise<boolean> {
+    const { roomId, password } = checkPasswordDto;
+    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+    return room?.password === password;
   }
 
   // 방 생성
@@ -109,6 +118,7 @@ export class ChatService {
     return createdRoom;
   }
 
+  // 방 삭제
   async deleteRoom(roomId: number): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {

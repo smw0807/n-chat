@@ -14,6 +14,7 @@ import { CurrentUser } from '../auth/decorator/current.user';
 import { User } from '../user/entity/user.entity';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { ChatGateway } from './chat.gateway';
+import { CheckPasswordDto } from './dto/join-room.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -43,6 +44,13 @@ export class ChatController {
     return room;
   }
 
+  @UseGuards(AuthGuard)
+  @Post('rooms/check-password')
+  async checkPassword(@Body() checkPasswordDto: CheckPasswordDto) {
+    return await this.chatService.checkPassword(checkPasswordDto);
+  }
+
+  @UseGuards(AuthGuard)
   @Delete('rooms/:roomId')
   async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
     await this.chatService.deleteRoom(roomId);
