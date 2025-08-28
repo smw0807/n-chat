@@ -6,6 +6,7 @@ import useToken from '@/hooks/useToken';
 import { useUserStore } from '@/store/user';
 
 import Modal from '@/components/modal/ParallelModal';
+import Error from '@/components/form/Error';
 
 function LoginPage() {
   const router = useRouter();
@@ -89,11 +90,7 @@ function LoginPage() {
   return (
     <Modal title="로그인">
       <div className="flex flex-col gap-4">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
+        {error && <Error error={error} />}
 
         <input
           className="p-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
