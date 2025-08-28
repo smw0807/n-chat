@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useRooms from '@/hooks/useRooms';
+import Error from './Error';
 function CreateRoom({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
   const router = useRouter();
   const { create } = useRooms();
@@ -45,11 +46,7 @@ function CreateRoom({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) {
   return (
     <div>
       <div>
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
+        {error && <Error error={error} />}
         <div className="flex gap-4 mb-4 items-center">
           <label htmlFor="name" className="w-1/5">
             방 이름

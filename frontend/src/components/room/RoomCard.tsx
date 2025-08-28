@@ -6,6 +6,8 @@ import { Room } from '@/models/room';
 import Modal from '@/components/modal/PortalModal';
 import useChat from '@/hooks/useChat';
 
+import Error from '@/components/form/Error';
+
 interface RoomCardProps {
   room: Room;
 }
@@ -50,9 +52,7 @@ function RoomCard({ room }: RoomCardProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {isPasswordFail && (
-              <p className="text-red-500">비밀번호가 일치하지 않습니다.</p>
-            )}
+            {isPasswordFail && <Error error="비밀번호가 일치하지 않습니다." />}
           </div>
         }
         footer={
