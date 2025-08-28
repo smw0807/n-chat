@@ -6,3 +6,5 @@ export const createRoom = `${API_BASE_URL}/chat/rooms`;
 
 export const getRoomInfo = (roomId: number) =>
   `${API_BASE_URL}/chat/rooms/${roomId}`;
+
+export const checkPassword = `${API_BASE_URL}/chat/rooms/check-password`;

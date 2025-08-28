@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getRoomInfo } from '@/apis/chat';
+import { checkPassword, getRoomInfo } from '@/apis/chat';
 import { Room } from '@/models/room';
+import useFetch from './useFetch';
 
 export default function useChat(roomId: number) {
   const [room, setRoom] = useState<Room>();
+  const { fetchData } = useFetch();
 
   useEffect(() => {
     const fetchRoomInfo = async () => {
@@ -14,5 +16,13 @@ export default function useChat(roomId: number) {
     fetchRoomInfo();
   }, [roomId]);
 
-  return { room };
+  const handleCheckPassword = async (password: string) => {
+    const response = await fetchData(checkPassword, 'POST', {
+      roomId,
+      password,
+    });
+    return response;
+  };
+
+  return { room, handleCheckPassword };
 }
