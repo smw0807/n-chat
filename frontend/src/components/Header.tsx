@@ -1,12 +1,17 @@
 'use client';
-
-import useAuth from '@/hooks/useAuth';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+
+import useAuth from '@/hooks/useAuth';
+
+import Modal from './modal/PortalModal';
 
 function Header() {
   const router = useRouter();
   const { user, handleLogout, isLoading } = useAuth();
+
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLogin = () => {
     router.push('/login');
@@ -20,6 +25,28 @@ function Header() {
     } else if (user) {
       return (
         <>
+          <Modal
+            isOpen={isLogoutModalOpen}
+            setIsOpen={setIsLogoutModalOpen}
+            title="로그아웃"
+            content={<div className="text-center">로그아웃 하시겠습니까?</div>}
+            footer={
+              <div className="space-x-2 w-full flex justify-center items-center">
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded-md"
+                  onClick={handleLogout}
+                >
+                  예
+                </button>
+                <button
+                  className="px-4 py-2 rounded-md"
+                  onClick={() => setIsLogoutModalOpen(false)}
+                >
+                  아니오
+                </button>
+              </div>
+            }
+          />
           <div className="flex items-center gap-2">
             <div>
               {user.profileImage && (
@@ -37,8 +64,8 @@ function Header() {
             </div>
           </div>
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md si"
-            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded-md"
+            onClick={() => setIsLogoutModalOpen(true)}
           >
             Logout
           </button>
