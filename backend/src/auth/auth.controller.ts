@@ -1,6 +1,6 @@
-import { Controller, Headers, Logger, Post, Req, Res } from '@nestjs/common';
+import { Controller, Headers, Logger, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { Status } from 'src/user/entity/user.entity';
 
