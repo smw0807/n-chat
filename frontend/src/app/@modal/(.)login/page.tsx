@@ -87,6 +87,13 @@ function LoginPage() {
     }
   };
 
+  const googleLogin = async () => {
+    const res = await googleLogin();
+    if (res) {
+      router.back();
+    }
+  };
+
   return (
     <Modal title="로그인">
       <div className="flex flex-col gap-4">
@@ -125,7 +132,7 @@ function LoginPage() {
         {/* 구글 로그인 */}
         <button
           className="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          onClick={() => {}}
+          onClick={googleLogin}
           disabled={isLoading}
         >
           구글 로그인

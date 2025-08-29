@@ -73,12 +73,17 @@ export class AuthController {
 
   // 토큰 검증 (토큰 헤더에 담겨있어야함)
   @Post('verify/token')
-  async verifyToken(@Req() req: Request, @Res() res: Response) {
+  async verifyToken(
+    @Headers('authorization') authorization: string,
+    @Res() res: Response,
+  ) {
     try {
+      const token = authorization.split(' ');
+      if (token.length !== 2) {
+        return res.status(401).send('유효하지 않은 토큰입니다.');
+      }
       // access token 검증
-      const decoded = await this.authService.verifyToken(
-        req.headers.authorization as string,
-      );
+      const decoded = await this.authService.verifyToken(token[1]);
       if (!decoded) {
         return res.status(401).send('유효하지 않은 토큰입니다.');
       }
@@ -98,11 +103,16 @@ export class AuthController {
 
   // 토큰 재발급(토큰 헤더에 담겨있어야함)
   @Post('refresh/token')
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
+  async refreshToken(
+    @Headers('authorization') authorization: string,
+    @Res() res: Response,
+  ) {
     try {
-      const decoded = await this.authService.verifyToken(
-        req.headers.authorization as string,
-      );
+      const token = authorization.split(' ');
+      if (token.length !== 2) {
+        return res.status(401).send('유효하지 않은 토큰입니다.');
+      }
+      const decoded = await this.authService.verifyToken(token[1]);
       if (!decoded) {
         return res.status(401).send('유효하지 않은 토큰입니다.');
       }
