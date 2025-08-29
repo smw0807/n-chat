@@ -46,7 +46,7 @@ function SignupPage() {
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (password !== passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
@@ -55,10 +55,7 @@ function SignupPage() {
       return;
     }
     setError('');
-    handleSignup();
-  };
 
-  const handleSignup = async () => {
     const res = await signup({ email, name, password });
     if (res) {
       router.back();
