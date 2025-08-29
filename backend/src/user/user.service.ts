@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import { SignupDto, SocialSignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -19,6 +20,7 @@ export class UserService {
       ...user,
       password: hashedPassword,
     });
+    this.logger.log(newUser, 'newUser');
     return this.userRepository.save(newUser);
   }
 

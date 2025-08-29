@@ -8,3 +8,9 @@ export interface User {
   iat?: number;
   exp?: number;
 }
+
+export interface SignupDto {
+  email: string;
+  name: string;
+  password: string;
+}

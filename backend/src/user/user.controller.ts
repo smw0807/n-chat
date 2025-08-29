@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -25,6 +26,12 @@ export class UserController {
       throw new ConflictException('Email already in use');
     }
     return this.userService.signup(user);
+  }
+
+  @Get('check-email')
+  async checkEmail(@Query('email') email: string): Promise<boolean> {
+    const existingUser = await this.userService.findOne(email);
+    return existingUser ? true : false;
   }
 
   @UseGuards(AuthGuard)
