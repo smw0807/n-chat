@@ -5,14 +5,17 @@ import { Room } from '@/models/room';
 
 import Modal from '@/components/modal/PortalModal';
 import useChat from '@/hooks/useChat';
+import useAuth from '@/hooks/useAuth';
 
 import Error from '@/components/form/Error';
+import Button from '@/components/shared/Button';
 
 interface RoomCardProps {
   room: Room;
 }
 function RoomCard({ room }: RoomCardProps) {
   const { handleCheckPassword } = useChat(room.id);
+  const { user } = useAuth();
   const router = useRouter();
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -31,6 +34,11 @@ function RoomCard({ room }: RoomCardProps) {
   };
 
   const handleJoinRoom = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     if (!room.isPrivate) {
       router.push(`/chat/${room.id}`);
     } else {
@@ -46,29 +54,21 @@ function RoomCard({ room }: RoomCardProps) {
         setIsOpen={setIsPasswordModalOpen}
         content={
           <div className="flex flex-col items-center justify-center">
+            {isPasswordFail && <Error error="비밀번호가 일치하지 않습니다." />}
             <input
               type="password"
               className="w-full p-2 border border-gray-300 rounded-md"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {isPasswordFail && <Error error="비밀번호가 일치하지 않습니다." />}
           </div>
         }
         footer={
           <div className="flex justify-end space-x-2">
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md"
-              onClick={handleSubmit}
-            >
-              확인
-            </button>
-            <button
-              className="px-4 py-2 bg-gray-500 text-white rounded-md"
-              onClick={() => setIsPasswordModalOpen(false)}
-            >
+            <Button onClick={handleSubmit}>확인</Button>
+            <Button type="gray" onClick={() => setIsPasswordModalOpen(false)}>
               취소
-            </button>
+            </Button>
           </div>
         }
       />

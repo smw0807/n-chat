@@ -6,6 +6,7 @@ import Image from 'next/image';
 import useAuth from '@/hooks/useAuth';
 
 import Modal from './modal/PortalModal';
+import Button from './shared/Button';
 
 function Header() {
   const router = useRouter();
@@ -32,18 +33,10 @@ function Header() {
             content={<div className="text-center">로그아웃 하시겠습니까?</div>}
             footer={
               <div className="space-x-2 w-full flex justify-center items-center">
-                <button
-                  className="bg-green-500 text-white px-4 py-2 rounded-md"
-                  onClick={handleLogout}
-                >
-                  예
-                </button>
-                <button
-                  className="px-4 py-2 rounded-md"
-                  onClick={() => setIsLogoutModalOpen(false)}
-                >
+                <Button onClick={handleLogout}>예</Button>
+                <Button type="gray" onClick={() => setIsLogoutModalOpen(false)}>
                   아니오
-                </button>
+                </Button>
               </div>
             }
           />
@@ -63,22 +56,16 @@ function Header() {
               <p className="text-sm text-gray-500">{user.email}</p>
             </div>
           </div>
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-            onClick={() => setIsLogoutModalOpen(true)}
-          >
+          <Button type="red" onClick={() => setIsLogoutModalOpen(true)}>
             Logout
-          </button>
+          </Button>
         </>
       );
     } else {
       return (
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={handleLogin}
-        >
+        <Button type="blue" onClick={handleLogin}>
           Login
-        </button>
+        </Button>
       );
     }
   };

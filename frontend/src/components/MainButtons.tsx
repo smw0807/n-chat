@@ -4,6 +4,7 @@ import useRooms from '@/hooks/useRooms';
 import useAuth from '@/hooks/useAuth';
 
 import Modal from '@/components/modal/PortalModal';
+import Button from '@/components/shared/Button';
 import CreateRoom from './form/CreateRoom';
 
 function MainButtons() {
@@ -15,16 +16,12 @@ function MainButtons() {
   return (
     <div className="flex justify-end gap-4">
       {/* 새로고침 */}
-      <button
-        className="bg-amber-500 text-white px-4 py-2 text-sm rounded-md"
-        onClick={fetchRooms}
-      >
+      <Button type="amber" onClick={fetchRooms}>
         새로고침
-      </button>
+      </Button>
 
       {/* 방만들기 버튼 */}
-      <button
-        className="bg-blue-500 text-white px-4 py-2 text-sm rounded-md"
+      <Button
         onClick={() => {
           if (user) {
             setIsOpen(true);
@@ -34,7 +31,8 @@ function MainButtons() {
         }}
       >
         방만들기
-      </button>
+      </Button>
+
       <Modal
         isOpen={isOpen}
         setIsOpen={setIsOpen}
@@ -46,14 +44,7 @@ function MainButtons() {
         setIsOpen={setHasUser}
         title="방만들기"
         content={<div className="text-center">로그인 후 이용해주세요.</div>}
-        footer={
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-            onClick={() => setHasUser(false)}
-          >
-            확인
-          </button>
-        }
+        footer={<Button onClick={() => setHasUser(false)}>확인</Button>}
       />
     </div>
   );

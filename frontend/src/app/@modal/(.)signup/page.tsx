@@ -6,6 +6,7 @@ import useUser from '@/hooks/useUser';
 
 import Modal from '@/components/modal/ParallelModal';
 import Error from '@/components/form/Error';
+import Button from '@/components/shared/Button';
 import { validateEmail } from '@/utils/validate';
 
 function SignupPage() {
@@ -100,18 +101,10 @@ function SignupPage() {
         />
       </div>
       <div className="flex justify-center items-center gap-4 border-t border-gray-300 pt-4 ">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={handleSubmit}
-        >
-          회원가입
-        </button>
-        <button
-          className="bg-gray-500 text-white px-4 py-2 rounded-md"
-          onClick={() => router.back()}
-        >
+        <Button onClick={handleSubmit}>회원가입</Button>
+        <Button type="gray" onClick={() => router.back()}>
           취소
-        </button>
+        </Button>
       </div>
     </Modal>
   );
