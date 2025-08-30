@@ -69,24 +69,29 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
       setIsConnected(false);
     });
 
-    socket.current.on('userJoined', (message: User) => {
-      setJoinUsers((prev) => [...prev, message]);
+    // 사용자 입장
+    socket.current.on('userJoined', (user: User) => {
+      setJoinUsers((prev) => [...prev, user]);
     });
 
+    // 방 참여자 목록
     socket.current.on('roomUsers', (users: User[]) => {
       setJoinUsers(users);
     });
 
+    // 새 메시지
     socket.current.on('newMessage', (message: Message) => {
       setMessages((prev) => [...prev, message]);
     });
 
+    // 메시지 히스토리
     socket.current.on('messageHistory', (history: Message[]) => {
       setMessages(history);
     });
 
-    socket.current.on('userLeft', (message: User) => {
-      setJoinUsers((prev) => prev.filter((user) => user.id !== message.id));
+    // 사용자 퇴장
+    socket.current.on('userLeft', (user: User) => {
+      setJoinUsers((prev) => prev.filter((u) => u.id !== user.id));
     });
 
     socket.current.on('error', (error: any) => {
