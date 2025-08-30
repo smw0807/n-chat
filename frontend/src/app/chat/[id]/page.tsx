@@ -95,23 +95,6 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 
     socket.current.on('error', (error: any) => {
       console.error('Socket error:', error);
-      setModalContent(
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-lg font-bold">{error.message}</p>
-        </div>
-      );
-      setModalFooter(
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          onClick={() => {
-            setIsOpen(false);
-            router.back();
-          }}
-        >
-          확인
-        </button>
-      );
-      setIsOpen(true);
     });
 
     return () => {
