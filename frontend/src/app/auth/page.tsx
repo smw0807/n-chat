@@ -14,36 +14,24 @@ function AuthPage() {
 
   const code = searchParams.get('code');
   const state = searchParams.get('state');
-  console.log(code);
-  console.log(state);
+
+  const apiUrl = {
+    kakao: kakaoCallbackApi,
+    google: googleCallbackApi,
+  };
 
   useEffect(() => {
     if (state === 'kakao') {
-      kakaoLogin();
+      login('kakao');
     } else {
-      googleLogin();
+      login('google');
     }
   }, [state]);
 
-  const kakaoLogin = async () => {
+  const login = async (type: 'kakao' | 'google') => {
     try {
-      const res = await fetch(`${kakaoCallbackApi}?code=${code}`);
-      console.log(res);
+      const res = await fetch(`${apiUrl[type]}?code=${code}`);
       const json = await res.json();
-      console.log(json);
-      setToken('access', json.access_token);
-      setToken('refresh', json.refresh_token);
-      router.push('/');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const googleLogin = async () => {
-    try {
-      const res = await fetch(`${googleCallbackApi}?code=${code}`);
-      console.log(res);
-      const json = await res.json();
-      console.log(json);
       setToken('access', json.access_token);
       setToken('refresh', json.refresh_token);
       router.push('/');
