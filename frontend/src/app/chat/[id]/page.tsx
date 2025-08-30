@@ -24,8 +24,6 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
-  const [modalFooter, setModalFooter] = useState<React.ReactNode>(null);
   const [joinUsers, setJoinUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -144,32 +142,6 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     setNewMessage('');
   };
 
-  // 방 나가기 확인 모달
-  const confirmLeaveRoom = () => {
-    setModalContent(
-      <div className="flex flex-col items-center justify-center">
-        <p className="text-lg font-bold">정말 나가시겠습니까?</p>
-      </div>
-    );
-    setModalFooter(
-      <div className="flex justify-end space-x-2">
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          onClick={handleLeaveRoom}
-        >
-          확인
-        </button>
-        <button
-          className="px-4 py-2 bg-gray-500 text-white rounded-md"
-          onClick={() => setIsOpen(false)}
-        >
-          취소
-        </button>
-      </div>
-    );
-    setIsOpen(true);
-  };
-
   const handleLeaveRoom = () => {
     socket.current.emit('leaveRoom', { roomId: parseInt(id) });
     router.push('/');
@@ -179,9 +151,28 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
     <>
       <Modal
         isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        content={modalContent}
-        footer={modalFooter}
+        setIsOpen={() => setIsOpen(false)}
+        content={
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-lg font-bold">정말 나가시겠습니까?</p>
+          </div>
+        }
+        footer={
+          <div className="flex justify-end space-x-2">
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              onClick={handleLeaveRoom}
+            >
+              확인
+            </button>
+            <button
+              className="px-4 py-2 bg-gray-500 text-white rounded-md"
+              onClick={() => setIsOpen(false)}
+            >
+              취소
+            </button>
+          </div>
+        }
       />
       <div className="h-screen flex flex-col bg-gray-50">
         {/* 상단 헤더 */}
@@ -189,7 +180,7 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
           room={room!}
           joinUsers={joinUsers.length}
           isConnected={isConnected}
-          onCLickLeave={confirmLeaveRoom}
+          onCLickLeave={() => setIsOpen(true)}
         />
 
         {/* 메인 컨텐츠 */}
