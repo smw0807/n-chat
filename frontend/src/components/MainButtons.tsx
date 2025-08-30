@@ -16,7 +16,7 @@ function MainButtons() {
   return (
     <div className="flex justify-end gap-4">
       {/* 새로고침 */}
-      <Button type="amber" onClick={fetchRooms}>
+      <Button type="green" onClick={fetchRooms}>
         새로고침
       </Button>
 
