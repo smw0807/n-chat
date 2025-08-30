@@ -48,7 +48,6 @@ interface ChatMessageDto {
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
-  private readonly namespace = '/chat';
 
   @WebSocketServer()
   server: Server;
