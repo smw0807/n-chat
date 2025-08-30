@@ -47,4 +47,8 @@ export async function refreshToken(token: string): Promise<Response> {
   });
 }
 
-export const;
+export const googleLoginApi = `${API_BASE_URL}/auth/google/signin`;
+export const googleCallbackApi = `${API_BASE_URL}/auth/google/callback`;
+
+export const kakaoLoginApi = `${API_BASE_URL}/auth/kakao/signin`;
+export const kakaoCallbackApi = `${API_BASE_URL}/auth/kakao/callback`;

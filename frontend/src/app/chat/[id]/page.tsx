@@ -250,6 +250,8 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
                         <Image
                           src={user.profileImage}
                           alt={user.name}
+                          width={50}
+                          height={50}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (

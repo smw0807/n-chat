@@ -46,8 +46,9 @@ function Header() {
                 <Image
                   src={user.profileImage}
                   alt="profile"
-                  width={32}
-                  height={32}
+                  width={60}
+                  height={60}
+                  className="w-10 h-10 rounded-full object-cover"
                 />
               )}
             </div>

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, verifyToken } from '@/apis/auth';
+import { login, verifyToken, googleLoginApi, kakaoLoginApi } from '@/apis/auth';
 import useToken from '@/hooks/useToken';
 import { useUserStore } from '@/store/user';
 
@@ -88,9 +88,21 @@ function LoginPage() {
   };
 
   const googleLogin = async () => {
-    const res = await googleLogin();
-    if (res) {
-      router.back();
+    const res = await fetch(googleLoginApi);
+    const { message, success, url } = await res.json();
+    console.log(message);
+    if (success) {
+      window.location.href = url;
+    }
+  };
+
+  const kakaoLogin = async () => {
+    const res = await fetch(kakaoLoginApi);
+    const { message, success, url } = await res.json();
+    console.log(message);
+    if (success) {
+      router.push(url);
+      // window.location.href = url;
     }
   };
 
@@ -141,7 +153,7 @@ function LoginPage() {
         {/* 카카오 로그인 */}
         <button
           className="bg-yellow-500 text-white p-2 rounded-md hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          onClick={() => {}}
+          onClick={kakaoLogin}
           disabled={isLoading}
         >
           카카오 로그인
