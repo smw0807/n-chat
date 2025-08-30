@@ -241,31 +241,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('typing')
-  handleTyping(
-    @MessageBody()
-    typingData: {
-      roomId: number;
-      isTyping: boolean;
-    },
-    @ConnectedSocket() client: Socket,
-  ) {
-    const { roomId, isTyping } = typingData;
-
-    const user = client.handshake.auth.user;
-
-    if (!user) {
-      return;
-    }
-
-    // 방의 다른 사용자들에게 타이핑 상태 전송
-    client.to(roomId.toString()).emit('userTyping', {
-      userId: user.id,
-      username: user.name,
-      isTyping,
-    });
-  }
-
   @SubscribeMessage('getMessageHistory')
   async handleGetMessageHistory(
     @MessageBody() data: { roomId: number; limit?: number },
