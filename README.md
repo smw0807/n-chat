@@ -134,20 +134,33 @@ NEXT_PUBLIC_ACCESS_TOKEN=
 NEXT_PUBLIC_REFRESH_TOKEN=
 ```
 
-## 📡 API 문서
+## 구현화면
 
-자세한 API 문서는 [backend/CHAT_API.md](./backend/CHAT_API.md)를 참조하세요.
+### 최초화면
 
-### 주요 엔드포인트
+<img src="./imgs/0.png"/>
 
-- `GET /api/chat/rooms` - 채팅방 목록 조회
-- `POST /api/chat/rooms` - 채팅방 생성
-- `GET /api/chat/room/{roomId}/messages` - 메시지 조회
-- `GET /api/auth/google` - Google OAuth
-- `GET /api/auth/kakao` - Kakao OAuth
+### 로그인 화면
 
-### WebSocket 이벤트
+<img src="./imgs/1.png"/>
+PostgreSQL에 저장되어 있는 이메일 로그인을 하거나, OAuth를 이용한 카카오 또는 구글 로그인을 할 수 있다.
 
-- `joinRoom` - 방 입장
-- `leaveRoom` - 방 나가기
-- `sendMessage` - 메시지 전송
+### OAuth 로그인 후
+
+<img src="./imgs/2.png"/>
+카카오 로그인한 상태로 사용자 프로필 이미지 및 이름과 이메일 주소가 노출된다.
+
+### 방 목록
+
+<img src="./imgs/3.png"/>
+일반 채팅방과 비공개 채팅방으로 생성할 수 있다.
+<img src="./imgs/3-3.png"/>
+### 채팅방
+
+<img src="./imgs/4.png"/>
+로그인 했을 경우에만 방에 접속할 수 있으며, 비공개 방은 비밀번호를 입력해야 한다.
+
+<img src="./imgs/5.png"/>
+채팅방에 인원이 꽉찼을 경우 접속할 수 없다.
+
+<img src="./imgs/6.png"/>
