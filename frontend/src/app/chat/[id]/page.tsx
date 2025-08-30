@@ -14,6 +14,7 @@ import { User } from '@/models/user';
 import { Message } from '@/models/chat';
 
 import Modal from '@/components/modal/PortalModal';
+import ChatHeader from '@/components/chat/Header';
 
 function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -184,55 +185,12 @@ function ChatPage({ params }: { params: Promise<{ id: string }> }) {
       />
       <div className="h-screen flex flex-col bg-gray-50">
         {/* 상단 헤더 */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={confirmLeaveRoom}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {room?.name}
-                </h1>
-                <p className="text-sm text-gray-500">
-                  {joinUsers.length}명 참여 중 • {room?.description}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* 연결 상태 표시 */}
-              <div
-                className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
-                  isConnected
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isConnected ? 'bg-green-500' : 'bg-red-500'
-                  }`}
-                ></div>
-                <span>{isConnected ? '연결됨' : '연결 안됨'}</span>
-              </div>
-            </div>
-          </div>
-        </header>
+        <ChatHeader
+          room={room!}
+          joinUsers={joinUsers.length}
+          isConnected={isConnected}
+          onCLickLeave={confirmLeaveRoom}
+        />
 
         {/* 메인 컨텐츠 */}
         <div className="flex-1 flex overflow-hidden">
